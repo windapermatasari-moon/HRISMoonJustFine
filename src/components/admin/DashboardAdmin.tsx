@@ -422,7 +422,7 @@ function Employees({data,onDelete,onEdit,onExport,onAdd}:{data:Karyawan[];onDele
       {msg&&<div className="form-error full-span">{msg}</div>}
       <div className="full-span form-actions"><button className="secondary" type="button" onClick={onDone}>Batal</button><button className="primary" disabled={saving}>{saving?'Menyimpan…':'Simpan Karyawan'}</button></div>
     </form></div></>;
-}
+
 
 
 function EmployeeEditor({employee,onClose,onSave}:{employee:Karyawan;onClose:()=>void;onSave:(p:Record<string,unknown>)=>void}) {
@@ -466,7 +466,7 @@ function Feature({title,text,icon}:{title:string;text:string;icon:string}) {
     {tab==='positions' && <div className="feature-grid"><Feature title="Daftar Jabatan" text="Kelola jabatan dan level organisasi dari satu tempat." icon="♙"/><Feature title="Level & Grade" text="Atur grade, level, dan rentang kompensasi." icon="◎"/><Feature title="Job Description" text="Simpan tanggung jawab dan persyaratan setiap posisi." icon="▤"/></div>}
     {tab==='structure' && <div className="panel"><div className="empty-module"><div className="empty-icon">⌘</div><h3>Organization Chart</h3><p>Struktur reporting line siap digunakan. Setiap karyawan dapat diarahkan ke departemen dan atasan langsung.</p><button className="primary">＋ Atur Struktur</button></div></div>}
   </BranchPage>;
-}
+
 
 function AttendanceModule({type,data,onExport}:{type:MenuKey;data:Absensi[];onExport:()=>void}) {
   const [tab,setTab]=useState(type==='attendance-today'?'today':type==='late'?'late':type==='leave'?'leave':type==='overtime'?'overtime':type==='selfie'?'selfie':'summary');

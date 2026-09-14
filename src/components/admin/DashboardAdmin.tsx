@@ -1,11 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import { rupiah } from '../../lib/hris';
 import './admin.css';
 import MasterData from './MasterData';
-import MasterDataModule from './MasterDataModule';
-
-
 type Karyawan = {
   id: string;
   id_karyawan?: string;
@@ -286,21 +283,11 @@ export default function DashboardAdmin() {
           {menu === 'employees' && <Employees data={filteredEmployees} onDelete={deleteEmployee} onEdit={setEditing}
             onExport={() => exportCsv(employees as unknown as Record<string, unknown>[], 'database-karyawan.csv')} onAdd={() => setMenu('employee-add')} />}
 
-          {menu === 'employee-add' && <AddEmployee onDone={() => { setMenu('employees'); refresh(); }} />}
-
-          {menu === 'organization' && (
+         {menu === 'organization' && (
   <MasterData initialTab="cabang" />
 )}
 
-{menu === 'shift' && (
-  <MasterData initialTab="shift" />
-)}
-
-{menu === 'schedule' && (
-  <MasterData initialTab="jadwal" />
-)}
-
-{['attendance', 'attendance-today', 'late', 'leave', 'overtime', 'selfie'].includes(menu) &&
+{['attendance', 'attendance-today', 'late', 'leave', 'overtime', 'selfie'].includes(menu) && (
   <AttendanceModule
     type={menu}
     data={filteredAttendance}
@@ -311,7 +298,15 @@ export default function DashboardAdmin() {
       )
     }
   />
->}
+)}
+
+{menu === 'shift' && (
+  <MasterData initialTab="shift" />
+)}
+
+{menu === 'schedule' && (
+  <MasterData initialTab="jadwal" />
+)}
 
 {menu === 'holiday' && (
   <ScheduleModule type="holiday" />

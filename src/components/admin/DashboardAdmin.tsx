@@ -1,9 +1,10 @@
-
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import { rupiah } from '../../lib/hris';
 import './admin.css';
+import MasterData from './MasterData';
 import MasterDataModule from './MasterDataModule';
+
 
 type Karyawan = {
   id: string;
@@ -287,14 +288,34 @@ export default function DashboardAdmin() {
 
           {menu === 'employee-add' && <AddEmployee onDone={() => { setMenu('employees'); refresh(); }} />}
 
-          {menu === 'organization' && <MasterDataModule mode="organization" employees={employees} />}
+          {menu === 'organization' && (
+  <MasterData initialTab="cabang" />
+)}
 
-          {['attendance', 'attendance-today', 'late', 'leave', 'overtime', 'selfie'].includes(menu) &&
-            <AttendanceModule type={menu} data={filteredAttendance}
-              onExport={() => exportCsv(attendance as unknown as Record<string, unknown>[], 'laporan-absensi.csv')} />}
+{menu === 'shift' && (
+  <MasterData initialTab="shift" />
+)}
 
-          {['schedule', 'shift', 'holiday'].includes(menu) && <MasterDataModule mode="schedule" employees={employees} initialTab={menu === 'shift' ? 'shifts' : menu === 'holiday' ? 'holidays' : 'calendar'} />}
+{menu === 'schedule' && (
+  <MasterData initialTab="jadwal" />
+)}
 
+{['attendance', 'attendance-today', 'late', 'leave', 'overtime', 'selfie'].includes(menu) &&
+  <AttendanceModule
+    type={menu}
+    data={filteredAttendance}
+    onExport={() =>
+      exportCsv(
+        attendance as unknown as Record<string, unknown>[],
+        'laporan-absensi.csv'
+      )
+    }
+  />
+>}
+
+{menu === 'holiday' && (
+  <ScheduleModule type="holiday" />
+)}
           {['leave-request', 'leave-balance'].includes(menu) && <LeaveModule type={menu} employees={employees} />}
 
           {['payroll', 'payroll-components', 'payroll-overtime', 'payslip'].includes(menu) &&

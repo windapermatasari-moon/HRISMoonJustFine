@@ -171,14 +171,14 @@ export default function DashboardAdmin() {
       .toLowerCase().includes(search.toLowerCase())
   ), [employees, search]);
 
-  const filteredAttendance = useMemo(() => attendance.filter(a => {
-    const raw = a.tanggal || '';
-    // Existing app stores Indonesian date strings; date filters remain optional.
-    const textMatch = 
+const filteredAttendance = useMemo(() => attendance.filter(a => {
+  const textMatch =
     `${a.nama || ''} ${a.id_karyawan || ''} ${a.status || ''}`
-      .toLowerCase().includes(search.toLowerCase())
-  ), [attendance, search]);
+      .toLowerCase()
+      .includes(search.toLowerCase())
 
+  return textMatch
+}), [attendance, search])
   const today = attendance.filter(a => a.tanggal === todayId);
   const present = today.filter(a => ['Hadir', 'Tepat Waktu', 'Terlambat'].includes(a.status || 'Hadir')).length;
   const late = today.filter(a => (a.status || '').toLowerCase().includes('terlambat')).length;

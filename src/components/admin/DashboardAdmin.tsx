@@ -3,6 +3,7 @@ import { supabase } from '../../supabaseClient';
 import { rupiah } from '../../lib/hris';
 import './admin.css';
 import MasterData from './MasterData';
+
 type Karyawan = {
   id: string;
   id_karyawan?: string;
@@ -154,7 +155,6 @@ export default function DashboardAdmin() {
     e.preventDefault();
     setError('');
     setLoading(true);
-    // Kompatibilitas demo. Untuk produksi gunakan Supabase Auth + RLS.
     if (email === 'admin' && pin === 'admin123') {
       setLogged(true); setLoading(false); return;
     }
@@ -283,34 +283,37 @@ export default function DashboardAdmin() {
           {menu === 'employees' && <Employees data={filteredEmployees} onDelete={deleteEmployee} onEdit={setEditing}
             onExport={() => exportCsv(employees as unknown as Record<string, unknown>[], 'database-karyawan.csv')} onAdd={() => setMenu('employee-add')} />}
 
-         {menu === 'organization' && (
-  <MasterData initialTab="cabang" />
-)}
+          {menu === 'employee-add' && <AddEmployee onDone={() => setMenu('employees')} refresh={refresh} />}
 
-{['attendance', 'attendance-today', 'late', 'leave', 'overtime', 'selfie'].includes(menu) && (
-  <AttendanceModule
-    type={menu}
-    data={filteredAttendance}
-    onExport={() =>
-      exportCsv(
-        attendance as unknown as Record<string, unknown>[],
-        'laporan-absensi.csv'
-      )
-    }
-  />
-)}
+          {menu === 'organization' && (
+            <MasterData initialTab="cabang" />
+          )}
 
-{menu === 'shift' && (
-  <MasterData initialTab="shift" />
-)}
+          {['attendance', 'attendance-today', 'late', 'leave', 'overtime', 'selfie'].includes(menu) && (
+            <AttendanceModule
+              type={menu}
+              data={filteredAttendance}
+              onExport={() =>
+                exportCsv(
+                  attendance as unknown as Record<string, unknown>[],
+                  'laporan-absensi.csv'
+                )
+              }
+            />
+          )}
 
-{menu === 'schedule' && (
-  <MasterData initialTab="jadwal" />
-)}
+          {menu === 'shift' && (
+            <MasterData initialTab="shift" />
+          )}
 
-{menu === 'holiday' && (
-  <ScheduleModule type="holiday" />
-)}
+          {menu === 'schedule' && (
+            <MasterData initialTab="jadwal" />
+          )}
+
+          {menu === 'holiday' && (
+            <ScheduleModule type="holiday" />
+          )}
+
           {['leave-request', 'leave-balance'].includes(menu) && <LeaveModule type={menu} employees={employees} />}
 
           {['payroll', 'payroll-components', 'payroll-overtime', 'payslip'].includes(menu) &&
@@ -400,16 +403,116 @@ function AttendanceMini({rows}:{rows:Absensi[]}) {
     <tbody>{rows.length ? rows.map((a,i)=><tr key={a.id||i}><td><b>{a.nama||'-'}</b><small>{a.id_karyawan||''}</small></td><td>{a.tanggal||'-'}</td><td className="green">{a.jam_masuk||'-'}</td><td>{a.jam_pulang||'-'}</td><td><Status value={a.status||'Hadir'}/></td></tr>) : <Empty cols={5}/>}</tbody></table></div>;
 }
 
-  return <><Heading title="Tambah Karyawan" desc="Buat profil karyawan baru ke dalam master data."/>
-    <div className="panel form-panel"><form className="form-grid" onSubmit={save}>
-      {Object.entries(form).map(([key,val])=><label key={key}>{fieldLabel(key)}
-        <input required={['id_karyawan','nama'].includes(key)} type={key==='gaji_pokok'?'number':key==='tanggal_masuk'?'date':'text'}
-          value={val} onChange={e=>setForm({...form,[key]:e.target.value})}/></label>)}
-      {msg&&<div className="form-error full-span">{msg}</div>}
-      <div className="full-span form-actions"><button className="secondary" type="button" onClick={onDone}>Batal</button><button className="primary" disabled={saving}>{saving?'Menyimpan…':'Simpan Karyawan'}</button></div>
-    </form></div></>;
+function Employees({data, onDelete, onEdit, onExport, onAdd}:{data:Karyawan[]; onDelete:(k:Karyawan)=>void; onEdit:(k:Karyawan)=>void; onExport:()=>void; onAdd:()=>void}) {
+  return (
+    <>
+      <Heading title="Semua Karyawan" desc="Master data workforce, jabatan, status, dan payroll." action="＋ Tambah Karyawan" onAction={onAdd}/>
+      <div className="toolbar">
+        <div><b>{data.length}</b> karyawan ditemukan</div>
+        <button className="secondary" onClick={onExport}>⇩ Export CSV</button>
+      </div>
+      <div className="panel table-panel">
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>ID</th>
+                <th>Jabatan</th>
+                <th>Departemen</th>
+                <th>Status</th>
+                <th>Gaji Pokok</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.length ? data.map(k => (
+                <tr key={k.id}>
+                  <td>
+                    <div className="person">
+                      <div className="mini-avatar">{k.nama?.charAt(0) || 'K'}</div>
+                      <b>{k.nama}</b>
+                    </div>
+                  </td>
+                  <td>{k.id_karyawan || '-'}</td>
+                  <td>{k.jabatan || '-'}</td>
+                  <td>{k.departemen || '-'}</td>
+                  <td><Status value={k.status_aktif === false ? 'Nonaktif' : 'Aktif'}/></td>
+                  <td>{money(Number(k.gaji_pokok || 0))}</td>
+                  <td>
+                    <div className="row-actions">
+                      <button className="link-btn" onClick={() => onEdit(k)}>Edit</button>
+                      <button className="danger-text" onClick={() => onDelete(k)}>Hapus</button>
+                    </div>
+                  </td>
+                </tr>
+              )) : <Empty cols={7}/>}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
+  );
+}
 
+function AddEmployee({ onDone, refresh }: { onDone: () => void; refresh: () => void }) {
+  const [form, setForm] = useState({
+    id_karyawan: '',
+    nama: '',
+    jabatan: '',
+    email: '',
+    no_telp: '',
+    departemen: '',
+    tanggal_masuk: '',
+    gaji_pokok: ''
+  });
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState('');
 
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    setMsg('');
+    const { error } = await supabase.from('karyawan').insert({
+      ...form,
+      gaji_pokok: Number(form.gaji_pokok || 0),
+      status_aktif: true
+    });
+    setSaving(false);
+    if (error) {
+      setMsg(error.message);
+    } else {
+      refresh();
+      onDone();
+    }
+  }
+
+  return (
+    <>
+      <Heading title="Tambah Karyawan" desc="Buat profil karyawan baru ke dalam master data."/>
+      <div className="panel form-panel">
+        <form className="form-grid" onSubmit={save}>
+          {Object.entries(form).map(([key, val]) => (
+            <label key={key}>
+              {fieldLabel(key)}
+              <input
+                required={['id_karyawan', 'nama'].includes(key)}
+                type={key === 'gaji_pokok' ? 'number' : key === 'tanggal_masuk' ? 'date' : 'text'}
+                value={val}
+                onChange={e => setForm({ ...form, [key]: e.target.value })}
+              />
+            </label>
+          ))}
+          {msg && <div className="form-error full-span">{msg}</div>}
+          <div className="full-span form-actions">
+            <button className="secondary" type="button" onClick={onDone}>Batal</button>
+            <button className="primary" disabled={saving}>{saving ? 'Menyimpan…' : 'Simpan Karyawan'}</button>
+          </div>
+        </form>
+      </div>
+    </>
+  );
+}
 
 function EmployeeEditor({employee,onClose,onSave}:{employee:Karyawan;onClose:()=>void;onSave:(p:Record<string,unknown>)=>void}) {
   const [form,setForm]=useState({
@@ -442,17 +545,6 @@ function BranchPage({title,desc,items,active,onChange,children,action,onAction}:
 function Feature({title,text,icon}:{title:string;text:string;icon:string}) {
   return <div className="feature-card"><div className="feature-icon">{icon}</div><h3>{title}</h3><p>{text}</p><button className="link-btn">Kelola →</button></div>;
 }
-
-
-  const [tab,setTab]=useState('departments');
-  const depts=[...new Set(employees.map(e=>e.departemen||'Belum ditentukan'))];
-  const items=[{key:'departments',label:'Departemen',icon:'▦'},{key:'positions',label:'Jabatan',icon:'♙'},{key:'structure',label:'Struktur',icon:'⌘'}];
-  return <BranchPage title="Organisasi" desc="Kelola struktur perusahaan, departemen, jabatan, dan reporting line." items={items} active={tab} onChange={setTab} action={tab==='departments'?'＋ Tambah Departemen':'＋ Tambah'}>
-    {tab==='departments' && <div className="org-grid">{depts.map(d=><div className="org-card clickable" key={d}><div className="org-icon">▦</div><h3>{d}</h3><p>{employees.filter(e=>(e.departemen||'Belum ditentukan')===d).length} karyawan</p><div className="progress"><span style={{width:`${Math.min(100, employees.length ? employees.filter(e=>(e.departemen||'Belum ditentukan')===d).length/employees.length*100 : 0)}%`}}/></div><button className="link-btn">Lihat anggota →</button></div>)}</div>}
-    {tab==='positions' && <div className="feature-grid"><Feature title="Daftar Jabatan" text="Kelola jabatan dan level organisasi dari satu tempat." icon="♙"/><Feature title="Level & Grade" text="Atur grade, level, dan rentang kompensasi." icon="◎"/><Feature title="Job Description" text="Simpan tanggung jawab dan persyaratan setiap posisi." icon="▤"/></div>}
-    {tab==='structure' && <div className="panel"><div className="empty-module"><div className="empty-icon">⌘</div><h3>Organization Chart</h3><p>Struktur reporting line siap digunakan. Setiap karyawan dapat diarahkan ke departemen dan atasan langsung.</p><button className="primary">＋ Atur Struktur</button></div></div>}
-  </BranchPage>;
-
 
 function AttendanceModule({type,data,onExport}:{type:MenuKey;data:Absensi[];onExport:()=>void}) {
   const [tab,setTab]=useState(type==='attendance-today'?'today':type==='late'?'late':type==='leave'?'leave':type==='overtime'?'overtime':type==='selfie'?'selfie':'summary');

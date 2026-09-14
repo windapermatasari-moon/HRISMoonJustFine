@@ -407,7 +407,7 @@ function Employees({data,onDelete,onEdit,onExport,onAdd}:{data:Karyawan[];onDele
       <tbody>{data.length ? data.map(k=><tr key={k.id}><td><div className="person"><div className="mini-avatar">{k.nama?.charAt(0)||'K'}</div><b>{k.nama}</b></div></td><td>{k.id_karyawan||'-'}</td><td>{k.jabatan||'-'}</td><td>{k.departemen||'-'}</td><td><Status value={k.status_aktif === false ? 'Nonaktif' : 'Aktif'}/></td><td>{money(Number(k.gaji_pokok||0))}</td><td><div className="row-actions"><button className="link-btn" onClick={()=>onEdit(k)}>Edit</button><button className="danger-text" onClick={()=>onDelete(k)}>Hapus</button></div></td></tr>) : <Empty cols={7}/>}</tbody></table></div></div></>;
 }
 
-function AddEmployee({onDone}:{onDone:()=>void}) {
+
   const [form,setForm]=useState({id_karyawan:'',nama:'',jabatan:'',email:'',no_telp:'',departemen:'',tanggal_masuk:'',gaji_pokok:''});
   const [saving,setSaving]=useState(false); const [msg,setMsg]=useState('');
   async function save(e:React.FormEvent){e.preventDefault();setSaving(true);setMsg('');
@@ -457,7 +457,7 @@ function Feature({title,text,icon}:{title:string;text:string;icon:string}) {
   return <div className="feature-card"><div className="feature-icon">{icon}</div><h3>{title}</h3><p>{text}</p><button className="link-btn">Kelola →</button></div>;
 }
 
-function Organization({employees}:{employees:Karyawan[]}) {
+
   const [tab,setTab]=useState('departments');
   const depts=[...new Set(employees.map(e=>e.departemen||'Belum ditentukan'))];
   const items=[{key:'departments',label:'Departemen',icon:'▦'},{key:'positions',label:'Jabatan',icon:'♙'},{key:'structure',label:'Struktur',icon:'⌘'}];

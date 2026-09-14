@@ -400,20 +400,6 @@ function AttendanceMini({rows}:{rows:Absensi[]}) {
     <tbody>{rows.length ? rows.map((a,i)=><tr key={a.id||i}><td><b>{a.nama||'-'}</b><small>{a.id_karyawan||''}</small></td><td>{a.tanggal||'-'}</td><td className="green">{a.jam_masuk||'-'}</td><td>{a.jam_pulang||'-'}</td><td><Status value={a.status||'Hadir'}/></td></tr>) : <Empty cols={5}/>}</tbody></table></div>;
 }
 
-function Employees({data,onDelete,onEdit,onExport,onAdd}:{data:Karyawan[];onDelete:(k:Karyawan)=>void;onEdit:(k:Karyawan)=>void;onExport:()=>void;onAdd:()=>void}) {
-  return <><Heading title="Semua Karyawan" desc="Master data workforce, jabatan, status, dan payroll." action="＋ Tambah Karyawan" onAction={onAdd}/>
-    <div className="toolbar"><div><b>{data.length}</b> karyawan ditemukan</div><button className="secondary" onClick={onExport}>⇩ Export CSV</button></div>
-    <div className="panel table-panel"><div className="table-wrap"><table><thead><tr><th>Nama</th><th>ID</th><th>Jabatan</th><th>Departemen</th><th>Status</th><th>Gaji Pokok</th><th>Aksi</th></tr></thead>
-      <tbody>{data.length ? data.map(k=><tr key={k.id}><td><div className="person"><div className="mini-avatar">{k.nama?.charAt(0)||'K'}</div><b>{k.nama}</b></div></td><td>{k.id_karyawan||'-'}</td><td>{k.jabatan||'-'}</td><td>{k.departemen||'-'}</td><td><Status value={k.status_aktif === false ? 'Nonaktif' : 'Aktif'}/></td><td>{money(Number(k.gaji_pokok||0))}</td><td><div className="row-actions"><button className="link-btn" onClick={()=>onEdit(k)}>Edit</button><button className="danger-text" onClick={()=>onDelete(k)}>Hapus</button></div></td></tr>) : <Empty cols={7}/>}</tbody></table></div></div></>;
-}
-
-
-  const [form,setForm]=useState({id_karyawan:'',nama:'',jabatan:'',email:'',no_telp:'',departemen:'',tanggal_masuk:'',gaji_pokok:''});
-  const [saving,setSaving]=useState(false); const [msg,setMsg]=useState('');
-  async function save(e:React.FormEvent){e.preventDefault();setSaving(true);setMsg('');
-    const {error}=await supabase.from('karyawan').insert({...form,gaji_pokok:Number(form.gaji_pokok||0),status_aktif:true});
-    setSaving(false); if(error)setMsg(error.message); else onDone();
-  }
   return <><Heading title="Tambah Karyawan" desc="Buat profil karyawan baru ke dalam master data."/>
     <div className="panel form-panel"><form className="form-grid" onSubmit={save}>
       {Object.entries(form).map(([key,val])=><label key={key}>{fieldLabel(key)}

@@ -54,13 +54,7 @@ type Jadwal = {
   catatan: string | null;
 };
 
-type ModalType =
-  | 'cabang'
-  | 'departemen'
-  | 'jabatan'
-  | 'shift'
-  | 'jadwal'
-  | null;
+
 
 const emptyCabang = {
   kode: '',
@@ -1824,7 +1818,7 @@ function Select({
       >
         {options.map((option) => (
           <option key={option} value={option}>
-            {labels?.[option] ?? option || 'Pilih'}
+            {(labels?.[option] ?? option) || 'Pilih'}
           </option>
         ))}
       </select>
